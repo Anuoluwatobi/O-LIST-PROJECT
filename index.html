@@ -621,7 +621,17 @@
             connected to four dimension tables via one-to-many relationships. A custom Date
             Table was built using M code in Power Query to enable time-intelligence DAX functions.
         </p>
-        <p style="color:#d1d5db; margin-top:0.75rem;">
+
+        <div class="chart-showcase" style="margin-top:1.5rem;">
+            <img src="data_model.png" alt="Power BI star schema data model diagram showing Orders as the central fact table connected to Customers, Products, Order Items, Order Reviews, and Date Table">
+            <div class="chart-caption">
+                <strong>Data model diagram:</strong> the Order Items fact table sits at the
+                centre, connected to Customers, Products, Order Reviews, and a custom Date Table
+                via one-to-many relationships — a proper star schema rather than a flat, single-table model.
+            </div>
+        </div>
+
+        <p style="color:#d1d5db; margin-top:1.5rem;">
             <strong>Tools used:</strong> Power BI Desktop, Power Query (M language), DAX.
         </p>
 
