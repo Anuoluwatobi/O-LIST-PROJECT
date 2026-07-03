@@ -1,0 +1,881 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta property="og:title"
+          content="Olist Brazilian E-Commerce: Delivery Performance &amp; Product Analytics">
+    <meta property="og:description"
+          content="A Power BI portfolio project analysing 96,000+ delivered orders across Brazil.">
+    <title>Olist E-Commerce Dashboard | Delivery &amp; Product Analytics</title>
+    <style>
+        /* ── GLOBAL RESET & FONTS ─────────────────────── */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0f1117;
+            color: #e8eaf0;
+            line-height: 1.7;
+        }
+
+        /* ── NAVIGATION ───────────────────────────────── */
+        nav {
+            position: sticky;
+            top: 0;
+            background: rgba(15, 17, 23, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #2a2d3a;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 100;
+        }
+
+        nav .logo {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1fae7c;
+            letter-spacing: 0.05em;
+        }
+
+        nav ul {
+            display: flex;
+            gap: 2rem;
+            list-style: none;
+        }
+
+        nav ul a {
+            color: #9ca3af;
+            text-decoration: none;
+            font-size: 0.875rem;
+            transition: color 0.2s;
+        }
+
+        nav ul a:hover { color: #1fae7c; }
+
+        /* ── HERO SECTION ─────────────────────────────── */
+        .hero {
+            min-height: 88vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 4rem 2rem;
+            background: radial-gradient(
+                ellipse at 50% 0%,
+                rgba(11, 110, 79, 0.20) 0%,
+                transparent 70%
+            );
+            border-bottom: 1px solid #2a2d3a;
+        }
+
+        .hero-badge {
+            background: rgba(242, 169, 0, 0.12);
+            border: 1px solid rgba(242, 169, 0, 0.35);
+            color: #f2a900;
+            padding: 0.4rem 1.2rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.4rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 1.5rem;
+            max-width: 850px;
+        }
+
+        .hero h1 span { color: #1fae7c; }
+
+        .hero p.subtitle {
+            font-size: 1.15rem;
+            color: #d1d5db;
+            max-width: 640px;
+            margin-bottom: 0.75rem;
+        }
+
+        .hero p.tagline {
+            font-size: 0.9rem;
+            color: #6b7280;
+            max-width: 640px;
+            margin-bottom: 3rem;
+            letter-spacing: 0.02em;
+        }
+
+        /* ── STAT CARDS ───────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 1rem;
+            max-width: 1000px;
+            width: 100%;
+        }
+
+        .stat-card {
+            background: #1a1d27;
+            border: 1px solid #2a2d3a;
+            border-radius: 12px;
+            padding: 1.5rem 1rem;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .stat-card:hover { border-color: #1fae7c; }
+
+        .stat-card .number {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #1fae7c;
+            display: block;
+        }
+
+        .stat-card .label {
+            font-size: 0.78rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-top: 0.25rem;
+        }
+
+        /* ── SECTION LAYOUT ───────────────────────────── */
+        section {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 5rem 2rem;
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: #1fae7c;
+            margin-bottom: 0.75rem;
+        }
+
+        h2 {
+            font-size: clamp(1.5rem, 3vw, 2.2rem);
+            font-weight: 800;
+            margin-bottom: 1rem;
+            line-height: 1.2;
+        }
+
+        .section-intro {
+            color: #9ca3af;
+            font-size: 1.05rem;
+            max-width: 700px;
+            margin-bottom: 3rem;
+        }
+
+        /* ── EXECUTIVE SUMMARY / OVERVIEW ─────────────── */
+        .exec-summary {
+            background: linear-gradient(
+                135deg,
+                rgba(11, 110, 79, 0.10),
+                rgba(11, 110, 79, 0.02)
+            );
+            border: 1px solid rgba(11, 110, 79, 0.25);
+            border-radius: 16px;
+            padding: 2.5rem;
+            font-size: 1.05rem;
+            line-height: 1.85;
+            color: #d1d5db;
+        }
+
+        .exec-summary p + p { margin-top: 1.25rem; }
+
+        /* ── BUSINESS QUESTIONS LIST ──────────────────── */
+        .bq-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .bq-list li {
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            background: #1a1d27;
+            border: 1px solid #2a2d3a;
+            border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            font-size: 1rem;
+            color: #d1d5db;
+        }
+
+        .bq-list .bq-num {
+            flex-shrink: 0;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            background: rgba(31, 174, 124, 0.15);
+            color: #1fae7c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* ── METHODOLOGY TABLE ────────────────────────── */
+        .meta-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0 2.5rem;
+            background: #1a1d27;
+            border: 1px solid #2a2d3a;
+            border-radius: 12px;
+            overflow: hidden;
+            font-size: 0.9rem;
+        }
+
+        .meta-table th {
+            text-align: left;
+            background: rgba(11, 110, 79, 0.15);
+            color: #1fae7c;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            padding: 0.9rem 1.25rem;
+        }
+
+        .meta-table td {
+            padding: 0.85rem 1.25rem;
+            border-top: 1px solid #2a2d3a;
+            color: #d1d5db;
+        }
+
+        .meta-block h4 {
+            font-size: 0.95rem;
+            color: #f3f4f6;
+            margin: 2rem 0 0.75rem;
+        }
+
+        .meta-block ul, .meta-block ol {
+            color: #9ca3af;
+            font-size: 0.92rem;
+            padding-left: 1.3rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .dax-code {
+            display: block;
+            background: #14161d;
+            border: 1px solid #2a2d3a;
+            border-radius: 8px;
+            padding: 0.5rem 0.9rem;
+            font-family: 'Cascadia Code', Consolas, monospace;
+            font-size: 0.82rem;
+            color: #f2a900;
+            overflow-x: auto;
+        }
+
+        /* ── FINDINGS ─────────────────────────────────── */
+        .findings-flow {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .finding-card {
+            background: #1a1d27;
+            border: 1px solid #2a2d3a;
+            border-radius: 16px;
+            padding: 2rem;
+        }
+
+        .finding-card .bq-tag {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #1fae7c;
+            margin-bottom: 0.75rem;
+        }
+
+        .finding-card h3 {
+            font-size: 1.15rem;
+            font-weight: 700;
+            margin-bottom: 0.9rem;
+            color: #f3f4f6;
+        }
+
+        .finding-card p {
+            font-size: 0.95rem;
+            color: #b7bcc7;
+            margin-bottom: 0.9rem;
+        }
+
+        .finding-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0 1.25rem;
+            font-size: 0.88rem;
+        }
+
+        .finding-table th {
+            text-align: left;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid #2a2d3a;
+        }
+
+        .finding-table td {
+            padding: 0.5rem 0.75rem;
+            border-bottom: 1px solid #22252f;
+            color: #d1d5db;
+        }
+
+        .implication {
+            background: rgba(242, 169, 0, 0.06);
+            border-left: 3px solid #f2a900;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            font-size: 0.88rem;
+            color: #d1d5db;
+        }
+
+        .caveat {
+            background: rgba(27, 59, 111, 0.25);
+            border-left: 3px solid #3f6fb0;
+            border-radius: 0 8px 8px 0;
+            padding: 1rem 1.25rem;
+            font-size: 0.88rem;
+            color: #b7c4dc;
+            margin-top: 0.75rem;
+        }
+
+        /* ── DASHBOARD / CHART SHOWCASE ───────────────── */
+        .chart-showcase {
+            background: #1a1d27;
+            border: 1px solid #2a2d3a;
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .chart-showcase img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .chart-caption {
+            padding: 1rem 1.5rem;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            border-top: 1px solid #2a2d3a;
+        }
+
+        .chart-caption strong { color: #d1d5db; }
+
+        /* ── LIMITATIONS / NEXT STEPS ─────────────────── */
+        .two-col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        @media (max-width: 700px) {
+            .two-col { grid-template-columns: 1fr; }
+        }
+
+        .limit-block h3 {
+            font-size: 1rem;
+            color: #f3f4f6;
+            margin-bottom: 1rem;
+        }
+
+        .limit-block ul {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .limit-block li {
+            background: #1a1d27;
+            border: 1px solid #2a2d3a;
+            border-radius: 10px;
+            padding: 0.9rem 1.1rem;
+            font-size: 0.88rem;
+            color: #b7bcc7;
+        }
+
+        .limit-block.next li { border-left: 3px solid #1fae7c; }
+        .limit-block.limits li { border-left: 3px solid #e74c3c; }
+
+        /* ── ABOUT AUTHOR ──────────────────────────────── */
+        .author-section {
+            background: linear-gradient(
+                135deg,
+                rgba(27, 59, 111, 0.20),
+                rgba(11, 110, 79, 0.06)
+            );
+            border: 1px solid rgba(31, 174, 124, 0.2);
+            border-radius: 20px;
+            padding: 2.5rem;
+        }
+
+        .author-section p {
+            color: #d1d5db;
+            font-size: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .author-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .author-links a {
+            color: #1fae7c;
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: 1px solid rgba(31, 174, 124, 0.35);
+            padding: 0.55rem 1.1rem;
+            border-radius: 999px;
+            transition: background 0.2s;
+        }
+
+        .author-links a:hover { background: rgba(31, 174, 124, 0.1); }
+
+        /* ── FOOTER ───────────────────────────────────── */
+        footer {
+            border-top: 1px solid #2a2d3a;
+            padding: 3rem 2rem;
+            text-align: center;
+            color: #4b5563;
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: #1fae7c;
+            text-decoration: none;
+        }
+
+        .divider {
+            border: none;
+            border-top: 1px solid #2a2d3a;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── NAVIGATION ──────────────────────────────────────────── -->
+<nav>
+    <span class="logo">OLIST DASHBOARD</span>
+    <ul>
+        <li><a href="#overview">Overview</a></li>
+        <li><a href="#findings">Findings</a></li>
+        <li><a href="#dashboard">Dashboard</a></li>
+        <li><a href="#methodology">Methodology</a></li>
+    </ul>
+</nav>
+
+<!-- ── HERO ────────────────────────────────────────────────── -->
+<div class="hero">
+    <div class="hero-badge">Power BI Portfolio Project · Brazilian E-Commerce</div>
+    <h1>Olist Brazilian E-Commerce: <span>Delivery Performance</span> &amp; Product Analytics</h1>
+    <p class="subtitle">A Power BI portfolio project analysing 96,000+ delivered orders across Brazil.</p>
+    <p class="tagline">Built with Power BI | DAX | Power Query | Star Schema Data Modelling</p>
+
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="number">$15.84M</span>
+            <span class="label">Total Revenue</span>
+        </div>
+        <div class="stat-card">
+            <span class="number">12.50</span>
+            <span class="label">Avg. Delivery Speed (Days)</span>
+        </div>
+        <div class="stat-card">
+            <span class="number">SP · $5.77M</span>
+            <span class="label">Highest Revenue State</span>
+        </div>
+        <div class="stat-card">
+            <span class="number">4.09</span>
+            <span class="label">Avg. Customer Review Rating</span>
+        </div>
+        <div class="stat-card">
+            <span class="number">96K</span>
+            <span class="label">Total Orders Delivered</span>
+        </div>
+    </div>
+</div>
+
+<!-- ── PROJECT OVERVIEW ─────────────────────────────────────── -->
+<section id="overview">
+    <div class="section-label">Project Overview</div>
+    <h2>Why This Project, Why This Dataset</h2>
+    <div class="exec-summary">
+        <p>
+            Olist is Brazil's largest department store marketplace, connecting small and
+            medium-sized sellers across the country to major Brazilian retail channels through
+            a single integrated platform. Sellers list products through Olist, and orders are
+            fulfilled and shipped directly to customers across all 27 Brazilian states — making
+            delivery logistics and regional demand two of the most commercially important
+            variables in the business.
+        </p>
+        <p>
+            This dataset was chosen because it is real-world, multi-table relational data: over
+            99,000 orders, a genuine geographic spread across Brazil, and a two-year time
+            horizon from September 2016 to October 2018. That combination of scale, structure,
+            and messiness makes it a realistic stand-in for the kind of data a retail or
+            e-commerce business analyst would actually be asked to model and report on.
+        </p>
+        <p>
+            The project set out to build a professional, two-page Power BI dashboard that
+            answers five commercial business questions relevant to a retail or e-commerce
+            analyst role — covering delivery performance, customer satisfaction, product category
+            economics, and geographic concentration — using a proper star schema, Power Query
+            cleaning, and DAX time-intelligence and ranking measures rather than flat,
+            single-table reporting.
+        </p>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── BUSINESS QUESTIONS ───────────────────────────────────── -->
+<section id="business-questions">
+    <div class="section-label">Business Questions</div>
+    <h2>Five Questions the Dashboard Answers</h2>
+    <p class="section-intro">
+        Each question was defined before the model was built, and every KPI and chart on the
+        dashboard maps back to one of these five.
+    </p>
+    <ol class="bq-list">
+        <li><span class="bq-num">1</span> How effective is our delivery speed compared with our estimated delivery time?</li>
+        <li><span class="bq-num">2</span> What is the impact of delivery speed on customer feedback?</li>
+        <li><span class="bq-num">3</span> Which product category is most frequently purchased and generates the most revenue?</li>
+        <li><span class="bq-num">4</span> Which product categories are most popular in each Brazilian state?</li>
+        <li><span class="bq-num">5</span> What is the geographic distribution of our customer base across Brazil?</li>
+    </ol>
+</section>
+
+<hr class="divider">
+
+<!-- ── DATASET & METHODOLOGY ────────────────────────────────── -->
+<section id="methodology">
+    <div class="section-label">Dataset &amp; Methodology</div>
+    <h2>How the Model Was Built</h2>
+    <p class="section-intro">
+        Dataset: <strong>Olist Brazilian E-Commerce Public Dataset</strong> — available free on Kaggle.
+        Five of the nine available tables were used.
+    </p>
+
+    <table class="meta-table">
+        <tr>
+            <th>Table</th>
+            <th>Role</th>
+            <th>Rows</th>
+        </tr>
+        <tr>
+            <td>olist_orders_dataset</td>
+            <td>Dimension</td>
+            <td>96,478 (filtered to delivered)</td>
+        </tr>
+        <tr>
+            <td>olist_customers_dataset</td>
+            <td>Dimension</td>
+            <td>99,441</td>
+        </tr>
+        <tr>
+            <td>olist_products_dataset</td>
+            <td>Dimension</td>
+            <td>32,951</td>
+        </tr>
+        <tr>
+            <td>olist_order_items_dataset</td>
+            <td>Fact</td>
+            <td>112,650</td>
+        </tr>
+        <tr>
+            <td>olist_order_reviews_dataset</td>
+            <td>Dimension</td>
+            <td>99,224</td>
+        </tr>
+    </table>
+
+    <div class="meta-block">
+        <p style="color:#d1d5db;">
+            <strong>Data model:</strong> Star schema with Order Items as the central fact table,
+            connected to four dimension tables via one-to-many relationships. A custom Date
+            Table was built using M code in Power Query to enable time-intelligence DAX functions.
+        </p>
+        <p style="color:#d1d5db; margin-top:0.75rem;">
+            <strong>Tools used:</strong> Power BI Desktop, Power Query (M language), DAX.
+        </p>
+
+        <h4>Cleaning steps applied (Power Query)</h4>
+        <ul>
+            <li>Filtered the Orders table to delivered orders only</li>
+            <li>Removed unused columns across all tables</li>
+            <li>Converted date columns from Date/Time to Date type where appropriate</li>
+            <li>Replaced underscores with spaces in Portuguese product category names</li>
+            <li>Created a State Grouped calculated column to consolidate 17 smaller Brazilian states into a single "Other" category for the pie chart</li>
+        </ul>
+
+        <h4>Key DAX measures</h4>
+        <ul>
+            <li><span class="dax-code">Total Revenue = SUMX(Order Items, Price + Freight Value)</span></li>
+            <li><span class="dax-code">Total Orders Delivered = COUNTROWS(orders)</span></li>
+            <li><span class="dax-code">Average Delivery Speed = AVERAGEX(orders, DATEDIFF(Order Purchase Date, Delivery Date, DAY))</span></li>
+            <li><span class="dax-code">Average Estimated Delivery Speed = AVERAGEX(orders, DATEDIFF(Order Purchase Date, Estimated Delivery Date, DAY))</span></li>
+            <li><span class="dax-code">Average Customer Review Rating = AVERAGE(Order Reviews[Review Score])</span></li>
+            <li><span class="dax-code">Most Purchased Category = CONCATENATEX(TOPN(1, SUMMARIZE(...)))</span></li>
+            <li><span class="dax-code">Highest Revenue Product Category = CONCATENATEX(TOPN(1, SUMMARIZE(...)))</span></li>
+            <li><span class="dax-code">Total Orders by Category = COUNTROWS(Order Items)</span></li>
+            <li><span class="dax-code">Total Orders by State = COUNTROWS(Customers)</span></li>
+        </ul>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── KEY FINDINGS ─────────────────────────────────────────── -->
+<section id="findings">
+    <div class="section-label">Key Findings</div>
+    <h2>What the Data Actually Shows</h2>
+    <p class="section-intro">
+        One section per business question. Every figure below is confirmed from the dataset —
+        nothing here is estimated or invented.
+    </p>
+
+    <div class="findings-flow">
+
+        <div class="finding-card">
+            <div class="bq-tag">BQ1 · Delivery Speed vs Estimated Delivery Time</div>
+            <h3>Orders arrive in half the time customers are told to expect</h3>
+            <p>
+                Olist's average actual delivery time is <strong>12.5 days</strong> from order
+                placement to customer receipt. The average estimated delivery time promised at
+                checkout is <strong>24.37 days</strong> — nearly double the actual performance.
+                This roughly 12-day gap is consistent across every month in the dataset, with no
+                seasonal exceptions, reflecting a deliberate strategy of conservative delivery
+                promise-setting.
+            </p>
+            <div class="implication">
+                <strong>Commercial implication:</strong> this strategy protects satisfaction
+                scores by making "on time or early" the norm, but a 24-day promise may be
+                suppressing conversion among price-sensitive customers with faster alternatives.
+                A recommended next step is analysing cart abandonment against delivery promise
+                exposure to test whether shortening the estimated window is commercially
+                justified, given the infrastructure clearly supports delivering in half the
+                promised time.
+            </div>
+        </div>
+
+        <div class="finding-card">
+            <div class="bq-tag">BQ2 · Impact of Delivery Speed on Customer Feedback</div>
+            <h3>Every extra day late costs review score, and the drop-off is steep</h3>
+            <table class="finding-table">
+                <tr><th>Delivery Performance</th><th>Average Review Score</th></tr>
+                <tr><td>Early (before estimated date)</td><td>~4.3 / 5</td></tr>
+                <tr><td>On Time (on estimated date)</td><td>~4.0 / 5</td></tr>
+                <tr><td>Late 1–3 Days</td><td>~3.1 / 5</td></tr>
+                <tr><td>Super Late (&gt;3 Days)</td><td>~1.9 / 5</td></tr>
+            </table>
+            <p>
+                Orders delivered more than 3 days after the estimated date average just 1.9 out
+                of 5 — a drop of over two full points versus on-time orders.
+            </p>
+            <div class="caveat">
+                <strong>Analytical caveat:</strong> this is a strong correlation between delivery
+                performance and review scores, not proof of causation. Product quality, seller
+                responsiveness, and packaging aren't captured in this dataset and would need to
+                be controlled for before treating this as a definitive causal conclusion.
+            </div>
+        </div>
+
+        <div class="finding-card">
+            <div class="bq-tag">BQ3 · Most Frequently Purchased vs Highest Revenue Category</div>
+            <h3>Volume and revenue leaders are two different categories</h3>
+            <p>
+                The most frequently purchased category is <strong>cama mesa banho</strong> (bed,
+                table &amp; bath goods) — also the dominant category in São Paulo, Brazil's most
+                populous state. The highest revenue-generating category, however, is
+                <strong>beleza saude</strong> (health &amp; beauty) — a different category
+                entirely. Health and beauty products are purchased less often but at a higher
+                average price point or in higher-margin configurations.
+            </p>
+            <div class="implication">
+                <strong>Commercial implication:</strong> a category strategy optimising for
+                volume would reach a different conclusion than one optimising for revenue — the
+                two shouldn't be conflated when prioritising merchandising or seller support.
+            </div>
+        </div>
+
+        <div class="finding-card">
+            <div class="bq-tag">BQ4 · Product Category Popularity by State</div>
+            <h3>The national leader isn't the leader everywhere</h3>
+            <p>
+                Regional variation in purchasing preferences is confirmed. While cama mesa banho
+                dominates nationally by order volume, individual states diverge — Paraná (PR),
+                for example, shows <strong>moveis decoracao</strong> (furniture &amp; home
+                decoration) as its top category instead of the national leader. São Paulo (SP)
+                alone generates <strong>41.98%</strong> of all orders and <strong>$5.77M</strong>
+                of the total $15.84M revenue, and the top three states — SP, RJ, and MG — together
+                account for roughly <strong>70%</strong> of total order volume.
+            </p>
+        </div>
+
+        <div class="finding-card">
+            <div class="bq-tag">BQ5 · Geographic Distribution of Customer Base</div>
+            <h3>The business is heavily concentrated in Brazil's southeast</h3>
+            <p>
+                São Paulo alone accounts for 41.98% of all orders, and the top 10 states by order
+                volume account for approximately <strong>90.5%</strong> of all activity — the
+                remaining 17 states collectively contribute just 9.51%.
+            </p>
+            <div class="implication">
+                <strong>Commercial implication:</strong> this concentration is both a risk and an
+                opportunity — the business is heavily dependent on a single region, but most of
+                Brazil's geographic area and population remains relatively untapped from an
+                e-commerce penetration standpoint.
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── DASHBOARD ─────────────────────────────────────────────── -->
+<section id="dashboard">
+    <div class="section-label">Interactive Dashboard</div>
+    <h2>See the Dashboard in Action</h2>
+    <p class="section-intro">
+        A Brazil-inspired two-page report with cross-filter interactivity confirmed across every
+        visual — deep green (#0B6E4F), warm gold (#F2A900), and navy (#1B3B6F) throughout.
+    </p>
+
+    <div class="chart-showcase">
+        <img src="page1_full.png" alt="Page 1 — Delivery Performance, full dashboard view">
+        <div class="chart-caption">
+            <strong>Page 1 — Delivery Performance:</strong> KPI cards for Total Revenue, Average
+            Delivery Speed, Highest Revenue State, and Average Customer Review Rating, alongside
+            the actual-vs-estimated delivery speed chart and the review-by-delivery-performance
+            bar chart.
+        </div>
+    </div>
+
+    <div class="chart-showcase">
+        <img src="page1_chart_closeup.png" alt="Close-up of the actual vs estimated delivery speed chart">
+        <div class="chart-caption">
+            <strong>Chart close-up:</strong> Average actual (green) vs estimated (gold) delivery
+            speed by month — the consistent ~12-day gap is visible in every single month.
+        </div>
+    </div>
+
+    <div class="chart-showcase">
+        <img src="page2_full.png" alt="Page 2 — Products & Customers, full dashboard view">
+        <div class="chart-caption">
+            <strong>Page 2 — Products &amp; Customers:</strong> Total Orders Delivered, Most
+            Purchased Category, and Highest Revenue Product Category, alongside the state-level
+            pie chart and the revenue-vs-order-frequency combo chart by category.
+        </div>
+    </div>
+
+    <div class="chart-showcase">
+        <img src="page2_sp_filtered.png" alt="Page 2 filtered to São Paulo, showing cross-filter interactivity">
+        <div class="chart-caption">
+            <strong>Cross-filter demonstration:</strong> selecting the SP slice cross-filters the
+            entire page — Total Orders updates to 41K, both category cards update to "cama mesa
+            banho," and the combo chart recalculates to SP only.
+        </div>
+    </div>
+
+    <div class="chart-showcase">
+        <img src="page2_tooltip_hover.png" alt="Pie chart tooltip showing state, total orders delivered, and most purchased category">
+        <div class="chart-caption">
+            <strong>Dynamic tooltip:</strong> hovering any state on the pie chart surfaces its
+            State, Total Orders Delivered, and Most Purchased Category on demand.
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── LIMITATIONS & NEXT STEPS ─────────────────────────────── -->
+<section id="limitations">
+    <div class="section-label">Limitations &amp; Next Steps</div>
+    <h2>What This Doesn't Show — And What's Next</h2>
+
+    <div class="two-col">
+        <div class="limit-block limits">
+            <h3>Limitations</h3>
+            <ul>
+                <li>Product names aren't available — analysis is at category level only, not individual SKU level.</li>
+                <li>Customer IDs are anonymised and unique per order rather than per person, so true customer lifetime value or repeat-purchase analysis isn't possible.</li>
+                <li>Review comments are in Portuguese and predominantly absent (over 58% of rows have no comment), making sentiment analysis unfeasible without NLP tooling.</li>
+                <li>The BQ2 finding establishes correlation between delivery performance and review scores, not causation — additional variables would need to be controlled for.</li>
+            </ul>
+        </div>
+        <div class="limit-block next">
+            <h3>Recommended Next Steps</h3>
+            <ul>
+                <li>Integrate cart abandonment data to test whether the 12-day delivery promise gap suppresses conversion.</li>
+                <li>Add seller-level data to investigate whether late deliveries concentrate among specific sellers or product categories.</li>
+                <li>Explore seasonal trends more granularly using the full date dimension (Quarter, Day of Week) already built into the model.</li>
+                <li>Build a seller performance page as a third dashboard tab, reloading the order items seller_id column removed during cleaning.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<hr class="divider">
+
+<!-- ── ABOUT THE AUTHOR ─────────────────────────────────────── -->
+<section id="about">
+    <div class="section-label">About the Author</div>
+    <h2>Bolaji Anuoluwatobi</h2>
+    <div class="author-section">
+        <p>
+            I'm a data and business analytics professional building toward an AI engineering
+            career, with hands-on skills in SQL, Power BI, Python, and exploratory data analysis.
+            This dashboard was built end-to-end — data cleaning in Power Query, star-schema
+            modelling, DAX measures, and a Brazil-themed two-page report — as part of a
+            structured portfolio project.
+        </p>
+        <div class="author-links">
+            <a href="https://www.linkedin.com/in/YOUR-LINKEDIN-HANDLE" target="_blank">LinkedIn Profile →</a>
+            <a href="https://anuoluwatobi.github.io/Superstore-EDA/" target="_blank">Superstore EDA Project →</a>
+        </div>
+    </div>
+</section>
+
+<!-- ── FOOTER ────────────────────────────────────────────────── -->
+<footer>
+    <p>Built with Power BI · Power Query (M) · DAX · Star Schema Data Modelling</p>
+    <p style="margin-top:0.5rem;">
+        Dataset:
+        <a href="https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce" target="_blank">
+            Olist Brazilian E-Commerce Public Dataset · Kaggle
+        </a>
+    </p>
+    <p style="margin-top:0.5rem; color:#374151;">
+        Portfolio project mentored end-to-end through Claude (Anthropic) · 2026
+    </p>
+</footer>
+
+</body>
+</html>
